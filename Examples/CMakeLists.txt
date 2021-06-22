@@ -42,6 +42,7 @@ add_subdirectory(ImageRegistrationMethod1)
 add_subdirectory(ImageRegistrationMethod2)
 add_subdirectory(ImageRegistrationMethod3)
 add_subdirectory(ImageRegistrationMethod4)
+add_subdirectory(ImageRegistrationOptimizerWeights)
 add_subdirectory(ImageRegistrationMethodBSpline1)
 add_subdirectory(ImageRegistrationMethodBSpline2)
 add_subdirectory(ImageRegistrationMethodBSpline3)
@@ -68,9 +69,13 @@ macro(add_language_subdirectory lang)
   endif()
 endmacro()
 
+
+
+
 if ( BUILD_TESTING )
   add_subdirectory( test )
 
+  add_language_subdirectory( Java )
   add_language_subdirectory( CSharp )
   add_language_subdirectory( Python )
 
