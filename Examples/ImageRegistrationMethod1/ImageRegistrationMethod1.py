@@ -17,43 +17,57 @@
 #
 # =========================================================================
 
-import SimpleITK as sitk
+""" A SimpleITK example demonstrating basic image registration using the
+    TranlationTransform and the gradient descent optimizer. """
+
 import sys
 import os
+import SimpleITK as sitk
 
 
 def command_iteration(method):
-    print(f"{method.GetOptimizerIteration():3} = {method.GetMetricValue():10.5f} : {method.GetOptimizerPosition()}")
+    """ Callback invoked when the optimization process is performing an iteration. """
+    print(
+        f"{method.GetOptimizerIteration():3} "
+        + f"= {method.GetMetricValue():10.5f} "
+        + f": {method.GetOptimizerPosition()}"
+    )
 
 
-if len(sys.argv) < 4:
-    print("Usage:", sys.argv[0], "<fixedImageFilter> <movingImageFile>",
-          "<outputTransformFile>")
-    sys.exit(1)
+def main(args):
+    """ A basic SimpleITK image registration example. """
 
-fixed = sitk.ReadImage(sys.argv[1], sitk.sitkFloat32)
+    if len(args) < 3:
+        print(
+            "Usage:",
+            "ImageRegistrationMethod1",
+            "<fixedImageFilter> <movingImageFile>",
+            "<outputTransformFile>",
+        )
+        sys.exit(1)
 
-moving = sitk.ReadImage(sys.argv[2], sitk.sitkFloat32)
+    fixed = sitk.ReadImage(args[1], sitk.sitkFloat32)
 
-R = sitk.ImageRegistrationMethod()
-R.SetMetricAsMeanSquares()
-R.SetOptimizerAsRegularStepGradientDescent(4.0, .01, 200)
-R.SetInitialTransform(sitk.TranslationTransform(fixed.GetDimension()))
-R.SetInterpolator(sitk.sitkLinear)
+    moving = sitk.ReadImage(args[2], sitk.sitkFloat32)
 
-R.AddCommand(sitk.sitkIterationEvent, lambda: command_iteration(R))
+    R = sitk.ImageRegistrationMethod()
+    R.SetMetricAsMeanSquares()
+    R.SetOptimizerAsRegularStepGradientDescent(4.0, 0.01, 200)
+    R.SetInitialTransform(sitk.TranslationTransform(fixed.GetDimension()))
+    R.SetInterpolator(sitk.sitkLinear)
 
-outTx = R.Execute(fixed, moving)
+    R.AddCommand(sitk.sitkIterationEvent, lambda: command_iteration(R))
 
-print("-------")
-print(outTx)
-print(f"Optimizer stop condition: {R.GetOptimizerStopConditionDescription()}")
-print(f" Iteration: {R.GetOptimizerIteration()}")
-print(f" Metric value: {R.GetMetricValue()}")
+    outTx = R.Execute(fixed, moving)
 
-sitk.WriteTransform(outTx, sys.argv[3])
+    print("-------")
+    print(outTx)
+    print(f"Optimizer stop condition: {R.GetOptimizerStopConditionDescription()}")
+    print(f" Iteration: {R.GetOptimizerIteration()}")
+    print(f" Metric value: {R.GetMetricValue()}")
 
-if ("SITK_NOSHOW" not in os.environ):
+    sitk.WriteTransform(outTx, args[3])
+
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixed)
     resampler.SetInterpolator(sitk.sitkLinear)
@@ -63,5 +77,13 @@ if ("SITK_NOSHOW" not in os.environ):
     out = resampler.Execute(moving)
     simg1 = sitk.Cast(sitk.RescaleIntensity(fixed), sitk.sitkUInt8)
     simg2 = sitk.Cast(sitk.RescaleIntensity(out), sitk.sitkUInt8)
-    cimg = sitk.Compose(simg1, simg2, simg1 // 2. + simg2 // 2.)
-    sitk.Show(cimg, "ImageRegistration1 Composition")
+    cimg = sitk.Compose(simg1, simg2, simg1 // 2.0 + simg2 // 2.0)
+
+    return_images = {"fixed": fixed, "moving": moving, "composition": cimg}
+    return return_images
+
+
+if __name__ == "__main__":
+    return_dict = main(sys.argv)
+    if "SITK_NOSHOW" not in os.environ:
+        sitk.Show(return_dict["composition"], "ImageRegistration1 Composition")

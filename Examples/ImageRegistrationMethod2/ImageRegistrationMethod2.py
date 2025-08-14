@@ -17,56 +17,69 @@
 #
 # =========================================================================
 
-import SimpleITK as sitk
+""" A SimpleITK example demonstrating image registration with histogram
+    mutual information as a similarity measure. """
+
 import sys
 import os
+import SimpleITK as sitk
 
 
 def command_iteration(method):
-    print(f"{method.GetOptimizerIteration():3} = {method.GetMetricValue():7.5f} : {method.GetOptimizerPosition()}")
+    """ Callback invoked when the optimization process is running. """
+    print(
+        f"{method.GetOptimizerIteration():3} "
+        + f" = {method.GetMetricValue():7.5f} "
+        + f" : {method.GetOptimizerPosition()}"
+    )
 
 
-if len(sys.argv) < 4:
-    print("Usage:", sys.argv[0],
-          "<fixedImageFilter> <movingImageFile>  <outputTransformFile>")
-    sys.exit(1)
+def main(args):
+    """ A SimpleITK example demonstrating image registration with histogram
+        mutual information as a similarity measure. """
+    if len(args) < 3:
+        print(
+            "Usage:",
+            "ImageRegistrationMethod2",
+            "<fixedImageFilter> <movingImageFile>  <outputTransformFile>",
+        )
+        sys.exit(1)
 
-pixelType = sitk.sitkFloat32
+    fixed = sitk.ReadImage(args[1], sitk.sitkFloat32)
+    fixed = sitk.Normalize(fixed)
+    fixed = sitk.DiscreteGaussian(fixed, 2.0)
 
-fixed = sitk.ReadImage(sys.argv[1], sitk.sitkFloat32)
-fixed = sitk.Normalize(fixed)
-fixed = sitk.DiscreteGaussian(fixed, 2.0)
+    moving = sitk.ReadImage(args[2], sitk.sitkFloat32)
+    moving = sitk.Normalize(moving)
+    moving = sitk.DiscreteGaussian(moving, 2.0)
 
-moving = sitk.ReadImage(sys.argv[2], sitk.sitkFloat32)
-moving = sitk.Normalize(moving)
-moving = sitk.DiscreteGaussian(moving, 2.0)
+    R = sitk.ImageRegistrationMethod()
 
-R = sitk.ImageRegistrationMethod()
+    R.SetMetricAsJointHistogramMutualInformation()
 
-R.SetMetricAsJointHistogramMutualInformation()
+    R.SetOptimizerAsGradientDescentLineSearch(
+        learningRate=1.0,
+        numberOfIterations=200,
+        convergenceMinimumValue=1e-5,
+        convergenceWindowSize=5,
+    )
 
-R.SetOptimizerAsGradientDescentLineSearch(learningRate=1.0,
-                                          numberOfIterations=200,
-                                          convergenceMinimumValue=1e-5,
-                                          convergenceWindowSize=5)
+    R.SetInitialTransform(sitk.TranslationTransform(fixed.GetDimension()))
 
-R.SetInitialTransform(sitk.TranslationTransform(fixed.GetDimension()))
+    R.SetInterpolator(sitk.sitkLinear)
 
-R.SetInterpolator(sitk.sitkLinear)
+    R.AddCommand(sitk.sitkIterationEvent, lambda: command_iteration(R))
 
-R.AddCommand(sitk.sitkIterationEvent, lambda: command_iteration(R))
+    outTx = R.Execute(fixed, moving)
 
-outTx = R.Execute(fixed, moving)
+    print("-------")
+    print(outTx)
+    print(f"Optimizer stop condition: {R.GetOptimizerStopConditionDescription()}")
+    print(f" Iteration: {R.GetOptimizerIteration()}")
+    print(f" Metric value: {R.GetMetricValue()}")
 
-print("-------")
-print(outTx)
-print(f"Optimizer stop condition: {R.GetOptimizerStopConditionDescription()}")
-print(f" Iteration: {R.GetOptimizerIteration()}")
-print(f" Metric value: {R.GetMetricValue()}")
+    sitk.WriteTransform(outTx, args[3])
 
-sitk.WriteTransform(outTx, sys.argv[3])
-
-if ("SITK_NOSHOW" not in os.environ):
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixed)
     resampler.SetInterpolator(sitk.sitkLinear)
@@ -77,5 +90,12 @@ if ("SITK_NOSHOW" not in os.environ):
 
     simg1 = sitk.Cast(sitk.RescaleIntensity(fixed), sitk.sitkUInt8)
     simg2 = sitk.Cast(sitk.RescaleIntensity(out), sitk.sitkUInt8)
-    cimg = sitk.Compose(simg1, simg2, simg1 // 2. + simg2 // 2.)
-    sitk.Show(cimg, "ImageRegistration2 Composition")
+    cimg = sitk.Compose(simg1, simg2, simg1 // 2.0 + simg2 // 2.0)
+
+    return {"fixed": fixed, "moving": moving, "composition": cimg}
+
+
+if __name__ == "__main__":
+    return_dict = main(sys.argv)
+    if "SITK_NOSHOW" not in os.environ:
+        sitk.Show(return_dict["composition"], "ImageRegistration2 Composition")

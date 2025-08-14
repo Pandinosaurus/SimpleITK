@@ -17,23 +17,24 @@
 #
 # =========================================================================
 
-from __future__ import print_function
+""" An example script demonstrating Canny Edge Detection in SimpleITK. """
 
-import SimpleITK as sitk
 import sys
 import os
+import SimpleITK as sitk
 
 if len(sys.argv) < 2:
-    print("Usage: %s <input>" % (sys.argv[0]))
+    print(f"Usage: {sys.argv[0]} <input>")
     sys.exit(1)
 
 image = sitk.Cast(sitk.ReadImage(sys.argv[1]), sitk.sitkFloat32)
 
-edges = sitk.CannyEdgeDetection(image, lowerThreshold=200, upperThreshold=400,
-                                variance=[4] * 3)
+edges = sitk.CannyEdgeDetection(
+    image, lowerThreshold=200, upperThreshold=400, variance=[4] * 3
+)
 
 stats = sitk.StatisticsImageFilter()
 stats.Execute(image)
 
-if ("SITK_NOSHOW" not in os.environ):
-    sitk.Show(sitk.Maximum(image * 0.5, edges * stats.GetMaximum() * .5))
+if "SITK_NOSHOW" not in os.environ:
+    sitk.Show(sitk.Maximum(image * 0.5, edges * stats.GetMaximum() * 0.5))

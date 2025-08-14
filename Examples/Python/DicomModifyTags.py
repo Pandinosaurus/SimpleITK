@@ -16,12 +16,12 @@
 #
 # =========================================================================
 
-from __future__ import print_function
 
-import SimpleITK as sitk
+""" An example script showing how to modify the tags of a DICOM image with SimpleITK. """
 
 import sys
 import time
+import SimpleITK as sitk
 
 if len(sys.argv) < 3:
     print("Usage: python " + __file__ + " <input_image> <output_image>")
@@ -62,10 +62,11 @@ sitk.WriteImage(mean_image, sys.argv[2])
 # Where spaces are added is not specified and thus may vary
 # ("DERIVED\SECONDARY ", "DERIVED\ SECONDARY" are equivalent).
 modified_image = sitk.ReadImage(sys.argv[2])
-if modified_image.GetMetaData("0008|0008").replace(" ", "") \
-        != "DERIVED\\SECONDARY" or \
-        modified_image.GetMetaData("0008|0031") != modification_time or \
-        modified_image.GetMetaData("0008|0021") != modification_date:
+if (
+    modified_image.GetMetaData("0008|0008").replace(" ", "") != "DERIVED\\SECONDARY"
+    or modified_image.GetMetaData("0008|0031") != modification_time
+    or modified_image.GetMetaData("0008|0021") != modification_date
+):
     sys.exit(1)
 
 sys.exit(0)

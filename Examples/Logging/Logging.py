@@ -16,53 +16,68 @@
 #
 # =========================================================================
 
-import SimpleITK as sitk
+""" A SimpleITK example that demonstrates how to adapt SimpleITK messages
+    to be handled by a Python Logger object. """
+
 import logging
 import os
+import SimpleITK as sitk
+
 
 class SimpleITKLogger(sitk.LoggerBase):
     """
-     Adapts SimpleITK messages to be handled by a Python Logger object.
+    Adapts SimpleITK messages to be handled by a Python Logger object.
 
-     Allows using the logging module to control the handling of messages coming from ITK and SimpleTK. Messages
-     such as debug and warnings are handled by objects derived from sitk.LoggerBase.
+    Allows using the logging module to control the handling of messages coming
+    from ITK and SimpleTK. Messages such as debug and warnings are handled by
+    objects derived from sitk.LoggerBase.
 
-     The LoggerBase.SetAsGlobalITKLogger method must be called to enable SimpleITK messages to use the logger.
+    The LoggerBase.SetAsGlobalITKLogger method must be called to enable
+    SimpleITK messages to use the logger.
 
-     The Python logger module adds a second layer of control for the logging level in addition to the controls already
-      in SimpleITK.
+    The Python logger module adds a second layer of control for the logging
+    level in addition to the controls already in SimpleITK.
 
-     The "Debug" property of a SimpleITK object must be enabled (if available) and the support from the Python "logging
-     flow" hierarchy to handle debug messages from a SimpleITK object.
+    The "Debug" property of a SimpleITK object must be enabled (if
+    available) and the support from the Python "logging flow" hierarchy
+    to handle debug messages from a SimpleITK object.
 
-     Warning messages from SimpleITK are globally disabled with ProcessObject:GlobalWarningDisplayOff.
+    Warning messages from SimpleITK are globally disabled with
+    ProcessObject:GlobalWarningDisplayOff.
     """
 
     def __init__(self, logger: logging.Logger = logging.getLogger("SimpleITK")):
         """
-        Initializes with a Logger object to handle the messages emitted from SimpleITK/ITK.
+        Initializes with a Logger object to handle the messages emitted from
+        SimpleITK/ITK.
         """
-        super(SimpleITKLogger, self).__init__()
+        super().__init__()
         self._logger = logger
 
     @property
     def logger(self):
+        """ return the logger object """
         return self._logger
 
     @logger.setter
     def logger(self, logger):
+        """ set the logger object """
         self._logger = logger
 
     def __enter__(self):
+        """ Set this object as the global ITK logger. """
         self._old_logger = self.SetAsGlobalITKLogger()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """ Restore the previous global ITK logger. """
         self._old_logger.SetAsGlobalITKLogger()
         del self._old_logger
 
     def DisplayText(self, s):
-        # Remove newline endings from SimpleITK/ITK messages since the Python logger adds during output.
+        """ Display text message. """
+        # Remove newline endings from SimpleITK/ITK messages since the Python
+        # logger adds during output.
         self._logger.info(s.rstrip())
 
     def DisplayErrorText(self, s):
@@ -88,7 +103,7 @@ sitkLogger = SimpleITKLogger()
 sitkLogger.SetAsGlobalITKLogger()
 
 # Configure the Python root logger, enabling debug and info level messages.
-logging.basicConfig(format='%(name)s (%(levelname)s): %(message)s', level=logging.DEBUG)
+logging.basicConfig(format="%(name)s (%(levelname)s): %(message)s", level=logging.DEBUG)
 
 
 img = sitk.GaborSource(size=[64, 64, 64], frequency=4.0 / 64)

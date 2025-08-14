@@ -17,14 +17,14 @@
 #
 # =========================================================================
 
-from __future__ import print_function
+""" An example script using SimpleITK's ExtractImageFilter to extact a slice from a 3D image. """
 
-import SimpleITK as sitk
 import sys
 import os
+import SimpleITK as sitk
 
 if len(sys.argv) != 4:
-    print("Usage: %s inputImage sliceNumber outputImage" % (sys.argv[0]))
+    print(f"Usage: {sys.argv[0]} inputImage sliceNumber outputImage")
     sys.exit(1)
 
 zslice = int(sys.argv[2])
@@ -42,5 +42,5 @@ Extractor.SetIndex(index)
 
 sitk.WriteImage(Extractor.Execute(inputImage), str(sys.argv[3]))
 
-if ("SITK_NOSHOW" not in os.environ):
+if "SITK_NOSHOW" not in os.environ:
     sitk.Show(Extractor.Execute(inputImage))

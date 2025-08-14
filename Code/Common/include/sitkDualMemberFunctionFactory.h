@@ -1,20 +1,20 @@
 /*=========================================================================
-*
-*  Copyright NumFOCUS
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*         http://www.apache.org/licenses/LICENSE-2.0.txt
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*
-*=========================================================================*/
+ *
+ *  Copyright NumFOCUS
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
 #ifndef sitkDualMemberFunctionFactory_h
 #define sitkDualMemberFunctionFactory_h
 
@@ -22,12 +22,7 @@
 #include "sitkMemberFunctionFactoryBase.h"
 
 
-namespace itk
-{
-namespace simple
-{
-// this namespace is internal classes not part of the external simple ITK interface
-namespace detail
+namespace itk::simple::detail
 {
 
 
@@ -61,14 +56,19 @@ namespace detail
  *
  * \sa MemberFunctionFactory
  */
-template <typename TMemberFunctionPointer>
+template <typename TMemberFunctionPointer,
+          typename TContainer = std::unordered_map<std::tuple<unsigned int, int, unsigned int, int>,
+                                                   TMemberFunctionPointer,
+                                                   hash<std::tuple<unsigned int, int, unsigned int, int>>>>
 class DualMemberFunctionFactory
-  : protected MemberFunctionFactoryBase<TMemberFunctionPointer, std::tuple<unsigned int, int, unsigned int, int> >
+  : protected MemberFunctionFactoryBase<TMemberFunctionPointer,
+                                        std::tuple<unsigned int, int, unsigned int, int>,
+                                        TContainer>
 {
 
 public:
-
-  using Superclass = MemberFunctionFactoryBase<TMemberFunctionPointer, std::tuple<unsigned int, int, unsigned int, int> >;
+  using Superclass =
+    MemberFunctionFactoryBase<TMemberFunctionPointer, std::tuple<unsigned int, int, unsigned int, int>, TContainer>;
   using Self = DualMemberFunctionFactory;
 
   using MemberFunctionType = TMemberFunctionPointer;
@@ -77,13 +77,17 @@ public:
 
   /** \brief Constructor which permanently binds the constructed
    * object to pObject */
-  DualMemberFunctionFactory( ObjectType *pObject );
+  DualMemberFunctionFactory() = default;
+
+  using Superclass::GetLoadFactor;
+  using Superclass::GetMaximumLoadFactor;
 
   /** \brief Registers a specific member function.
    *
    * Registers a member function templated over TImageType1 and TImageType2 */
-  template< typename TImageType1, typename TImageType2 >
-  void Register( MemberFunctionType pfunc,  TImageType1*, TImageType2*  );
+  template <typename TImageType1, typename TImageType2>
+  void
+  Register(MemberFunctionType pfunc, TImageType1 *, TImageType2 *);
 
   /** \brief Registers the member functions for all combinations of
    * TPixelIDTypeList1 and PixelIDTypeList2
@@ -122,43 +126,43 @@ public:
    * \endcode
    * @{
    */
-  template < typename TPixelIDTypeList1,
-             typename TPixelIDTypeList2,
-             unsigned int VImageDimension,
-             typename TAddressor >
-  void RegisterMemberFunctions( );
-  template < typename TPixelIDTypeList1,
-             typename TPixelIDTypeList2,
-             unsigned int VImageDimension >
-  void RegisterMemberFunctions( )
+  template <typename TPixelIDTypeList1, typename TPixelIDTypeList2, unsigned int VImageDimension, typename TAddressor>
+  void
+  RegisterMemberFunctions();
+  template <typename TPixelIDTypeList1, typename TPixelIDTypeList2, unsigned int VImageDimension>
+  void
+  RegisterMemberFunctions()
   {
     using AddressorType = detail::DualExecuteInternalAddressor<MemberFunctionType>;
-    this->RegisterMemberFunctions< TPixelIDTypeList1, TPixelIDTypeList2, VImageDimension, AddressorType>();
+    this->RegisterMemberFunctions<TPixelIDTypeList1, TPixelIDTypeList2, VImageDimension, AddressorType>();
   }
 
-  template < typename TPixelIDTypeList,
-      unsigned int VImageDimension,
-      typename TAddressor >
-  void RegisterMemberFunctions( );
-  template < typename TPixelIDTypeList,
-      unsigned int VImageDimension >
-  void RegisterMemberFunctions( )
+  template <typename TPixelIDTypeList, unsigned int VImageDimension, typename TAddressor>
+  void
+  RegisterMemberFunctions();
+  template <typename TPixelIDTypeList, unsigned int VImageDimension>
+  void
+  RegisterMemberFunctions()
   {
     using AddressorType = detail::DualExecuteInternalAddressor<MemberFunctionType>;
-    this->RegisterMemberFunctions< TPixelIDTypeList, VImageDimension, AddressorType>();
+    this->RegisterMemberFunctions<TPixelIDTypeList, VImageDimension, AddressorType>();
   }
   /** @} */
 
   /** \brief Query to determine if an member function has been
-    * registered for pixelID1, pixelID2 and imageDimension
-    */
-  bool HasMemberFunction( PixelIDValueType pixelID1,
-                          PixelIDValueType pixelID2,
-                          unsigned int imageDimension  ) const noexcept;
+   * registered for pixelID1, pixelID2 and imageDimension
+   */
+  bool
+  HasMemberFunction(PixelIDValueType pixelID1, PixelIDValueType pixelID2, unsigned int imageDimension) const noexcept;
 
 
   /** \brief Returns a function object for the combination of
-   *  PixelID1 and PixelID2, and image dimension.
+   *  PixelID1 and PixelID2, and image dimension, with a object pointer.
+   *
+   *  This overload of GetMemberFunction allows the caller to specify a
+   *  custom object pointer type, which can be useful in certain
+   *  situations where the object pointer type needs to be different from
+   *  the one used during factory construction.
    *
    *  pixelID1 or pixelID2 is the value of Image::GetPixelIDValue(),
    *  or PixelIDToPixelIDValue<PixelIDType>::Result
@@ -169,24 +173,21 @@ public:
    *  \code
    *  PixelIDValueType pixelID = image->GetPixelIDValue();
    *  unsigned int dimension = image->GetDimension();
-   *  return this->m_MemberFactory->GetMemberFunction( pixelID, pixelID, dimension )( image );
+   *  return this->m_MemberFactory->GetMemberFunction( pixelID, pixelID, dimension, objectPointer )( image );
    *  \endcode
    *
    *  If the requested member function is not registered then an
    *  exception is generated. The returned function object is
    *  guaranteed to be valid.
    */
-  FunctionObjectType GetMemberFunction( PixelIDValueType pixelID1, PixelIDValueType pixelID2, unsigned int imageDimension  );
-
-protected:
-
-  ObjectType *m_ObjectPointer;
-
+  FunctionObjectType
+  GetMemberFunction(PixelIDValueType pixelID1,
+                    PixelIDValueType pixelID2,
+                    unsigned int     imageDimension,
+                    ObjectType *     objectPointer) const;
 };
 
-} // end namespace detail
-} // end namespace simple
-} // end namespace itk
+} // namespace itk::simple::detail
 
 #include "sitkDualMemberFunctionFactory.hxx"
 

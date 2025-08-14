@@ -14,9 +14,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-# Writes the date and time in RFC 2822 format to the file "datetime.txt"
+# Writes the date and time in RFC 2822 format to stdout
 
 import time
+import sys
 
-with open("datetime.txt", "w") as fp:
-    fp.write(time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime()))
+sys.stdout.write(time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime()))

@@ -1,6 +1,7 @@
-FROM ubuntu:18.04 as simpleitk-doxygen
+FROM ubuntu:24.04 AS itk-doxygen
+LABEL maintainer="Insight Software Consortium <community@itk.org>"
 
-RUN apt-get update && \
+RUN apt-get update -y && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
   cmake \
   bison \
@@ -10,12 +11,18 @@ RUN apt-get update && \
   git \
   ninja-build \
   graphviz \
-  python \
-  && apt-get clean
+  python3 \
+  python3-pip \
+  python3-venv \
+  perl \
+  texlive-bibtex-extra &&\
+  apt-get clean
+
+RUN ln /usr/bin/dot /usr/sbin/dot
 
 RUN git clone https://github.com/doxygen/doxygen.git && \
     ( cd doxygen && \
-      git checkout Release_1_8_17 && \
+      git checkout Release_1_13_2 && \
       mkdir bld && cd bld && \
       cmake -G Ninja -DCMAKE_BUILD_TYPE=Release .. && \
       ninja install) && \
@@ -24,6 +31,8 @@ RUN git clone https://github.com/doxygen/doxygen.git && \
 RUN git config --global url."https://github.com/InsightSoftwareConsortium/".insteadOf "https://itk.org/"
 
 COPY run.sh /tmp
+
+#COPY patch /tmp/patch
 
 WORKDIR /work
 

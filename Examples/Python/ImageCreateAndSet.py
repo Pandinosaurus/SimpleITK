@@ -17,7 +17,7 @@
 #
 # =========================================================================
 
-from __future__ import print_function
+""" A SimpleITK example that sets pixel values and computes a Gaussian blob. """
 
 import os
 
@@ -36,7 +36,7 @@ sigma = 50
 xImg = sitk.Subtract(xImg, xImg.GetSize()[0] / 2)
 yImg = yImg - yImg.GetSize()[1] / 2
 
-gaussianImg = sitk.Exp(-1 * (xImg ** 2 + yImg ** 2) / (2.0 * sigma ** 2))
+gaussianImg = sitk.Exp(-1 * (xImg**2 + yImg**2) / (2.0 * sigma**2))
 
-if ("SITK_NOSHOW" not in os.environ):
+if "SITK_NOSHOW" not in os.environ:
     sitk.Show(gaussianImg, "Gaussian Blob")

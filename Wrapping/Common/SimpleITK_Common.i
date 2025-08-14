@@ -58,7 +58,7 @@
 %ignore itk::simple::Image::GetITKBase( void );
 %ignore itk::simple::Image::GetITKBase( void ) const;
 
-#if !(defined(SWIGCSHARP)
+#if !defined(SWIGCSHARP)
 %ignore itk::simple::Image::GetBufferAsInt8();
 %ignore itk::simple::Image::GetBufferAsUInt8();
 %ignore itk::simple::Image::GetBufferAsInt16();
@@ -95,8 +95,10 @@
 %{
 #include <SimpleITK.h>
 #include <sitkImageOperators.h>
+
 %}
 
+%apply std::string { itk::simple::PathType };
 
 // Help SWIG handle std vectors
 namespace std
@@ -144,11 +146,6 @@ namespace std
 #endif
 
 
-#ifndef SITK_RETURN_SELF_TYPE_HEADER
-#define SITK_RETURN_SELF_TYPE_HEADER void
-#endif
-
-
 // define these preprocessor directives to nothing for the swig interface
 #define SITKCommon_EXPORT
 #define SITKCommon_HIDDEN
@@ -161,18 +158,22 @@ namespace std
 #define SITKRegistration_EXPORT
 #define SITKRegistration_HIDDEN
 
+#define SITKElastix_EXPORT
+#define SITKElastix_HIDDEN
+
 
 // Any new classes need to have an "%include" statement to be wrapped.
 
 // Common
 %include "sitkConfigure.h"
 %include "sitkVersion.h"
+%include "sitkPathType.h"
 %include "sitkPixelIDValues.h"
+%include "sitkInterpolator.h"
 %include "sitkImage.h"
 %include "sitkObjectOwnedBase.h"
 %include "sitkCommand.h"
 %include "sitkLogger.h"
-%include "sitkInterpolator.h"
 %include "sitkKernel.h"
 %include "sitkEvent.h"
 %include "sitkRandomSeed.h"
@@ -219,6 +220,19 @@ namespace std
 %include "sitkExtractImageFilter.h"
 %include "sitkPasteImageFilter.h"
 %include "sitkAdditionalProcedures.h"
+
+#ifdef SITK_USE_ELASTIX
+%{
+#include <sitkElastixImageFilter.h>
+#include <sitkTransformixImageFilter.h>
+%}
+
+// Elastix and Transformix
+%template( ParameterMap ) std::map< std::string, std::vector< std::string > >;
+%template( VectorOfParameterMap ) std::vector< std::map< std::string, std::vector< std::string > > >;
+%include "sitkElastixImageFilter.h"
+%include "sitkTransformixImageFilter.h"
+#endif
 
 // Registration
 %include "sitkImageRegistrationMethod.h"

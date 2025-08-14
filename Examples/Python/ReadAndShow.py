@@ -17,18 +17,17 @@
 #
 # =========================================================================
 
-from __future__ import print_function
-
+""" An example script that read an image and call's SimpleITK's Show method to display it. """
 import os
 import sys
 
 import SimpleITK as sitk
 
 if len(sys.argv) != 2:
-    print("Usage: %s inputImage" % (sys.argv[0]))
+    print(f"Usage: {sys.argv[0]} inputImage")
     sys.exit(1)
 
 inputImage = sitk.ReadImage(sys.argv[1])
 
-if ("SITK_NOSHOW" not in os.environ):
+if "SITK_NOSHOW" not in os.environ:
     sitk.Show(inputImage)

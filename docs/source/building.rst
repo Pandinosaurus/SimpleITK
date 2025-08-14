@@ -3,19 +3,17 @@
 Building SimpleITK
 ******************
 
-
 Pre-built binaries (see :ref:`Downloading the binaries
 <installation-binaries>`) are available in many cases so
 users do not need to build SimpleITK. However, there are
-several reasons a user might prefer to **build SimpleITK from source code**:
+several reasons to **build SimpleITK from source code**:
 
--  The binary files for your programming language of choice are not
-   (yet) distributed
--  You want the live on the bleeding edge by using the
-   latest-and-greatest version of SimpleITK
--  You want to wrap your own filters using the SimpleITK infrastructure
--  You want to contribute to the development of SimpleITK
--  To use the SimpleITK's C++ interface and/or use ITK directly
+-  The binary files for a preferred programming language may not
+   (yet) be distributed.
+-  To use the latest-and-greatest version of SimpleITK from the development branch.
+-  To wrap custom filters using the SimpleITK infrastructure.
+-  To contribute to the development of SimpleITK.
+-  To use the SimpleITK C++ interface and/or use ITK directly.
 
 ..
   .. contents:: On this page
@@ -27,7 +25,7 @@ Prerequisites
 
 To build SimpleITK you need:
 
--  A recent version of `CMake <http://www.cmake.org/>`__ >= 3.10 with SSL
+-  A recent version of `CMake <http://www.cmake.org/>`__ >= 3.16.3 with SSL
    support for https.
 -  A supported :ref:`compiler <FAQ-compiler-supported>`.
 -  To use the latest developmental version, source code can be
@@ -36,14 +34,23 @@ To build SimpleITK you need:
    -  Git is required if building SimpleITK using :ref:`SuperBuild <building_superbuild>`
       to automatically download the matching version of ITK,
       SWIG, etc...
-   -  Windows users may prefer `msysGit <http://msysgit.github.com/>`__
+   -  Windows users may prefer `Git For Windows <https://gitforwindows.org/>`__
 
--  The Python interface requires Python version 3.5 or greater.
+- If you are wrapping SimpleITK for a language, that language's development libraries are
+also required.
 
--  It is recommended to have numpy installed when testing Python
-   bindings.
+System Requirements
+===================
+Building SimpleITK requires a significant amount of compute power, and a reasonably
+powerful, modern computer is recommended.  We suggest at least 4
+gigabytes (GB) of RAM plus an additional 2 GB per job process when building with
+multiple jobs.  A system with at least 4 cores for multi-job compilation is suggested.
 
--  The R interface requires R version 3.3 or greater.
+Building a SuperBuild of SimpleITK's C++ core including all the testing and
+example code requires approximately 10 GB of disk space.  Enabling the
+wrapping of Python or R can add 2 GB per language, and enabling the
+wrapping of all the languages SimpleITK supports, can bring the entire
+build folder to 16 GB.
 
 Recipes / Formulas / Short cuts
 ===============================
@@ -59,18 +66,11 @@ building of SimpleITK (see their repository for more details):
    frontend <https://github.com/SimpleITK/SimpleITKPythonPackage>`__ can be
    used to build, install, and package SimpleITK for Python.
 
--  For the **Anaconda Python** distribution: The recipe and instructions
-   for the SimpleITK build are in `this GitHub
-   repository <https://github.com/SimpleITK/SimpleITKCondaRecipe>`__.
-
--  For the **R language** (version 3.3 or greater): A devtools installer and instructions are
+-  For the **R language** (version 3.3 or greater): A remotes installer and instructions are
    available from `this GitHub
    repository <https://github.com/SimpleITK/SimpleITKRInstaller>`__.
 
--  For the **Lua language** with the Luarocks module deployment system,
-   a SimpleITK rockspec is available at the `Luarocks repository <https://luarocks.org/modules/dave3d/simpleitk>`__
-   or from `this GitHub repository <https://github.com/SimpleITK/SimpleITKLuaRock>`__.
-
+.. _source_code:
 
 Source code
 ===========
@@ -101,7 +101,7 @@ First obtain the SimpleITK source code:
 .. _building_superbuild:
 
 Building using SuperBuild
--------------------------
+=========================
 
 After downloading SimpleITK's source code we **STRONGLY** recommend
 running cmake on the SuperBuild subdirectory of SimpleITK. Execute the
@@ -115,8 +115,9 @@ configure the SuperBuild:
  cmake ../SimpleITK/SuperBuild
 
 The SuperBuild will automatically download and build the matching
-versions of ITK, SWIG, Lua, and GTest (if testing is enabled) needed to
-compile SimpleITK.
+versions of ITK, SWIG, and GTest (if testing is enabled) and will use
+`'uv' <https://docs.astral.sh/uv/>`__ to download Python then create a virtual
+environment with required packages needed to build SimpleITK.
 
 If you get an error message saying that ITK\_DIR is not set then, you
 did not correctly point cmake to the SuperBuild sub-directory. Please
@@ -137,9 +138,13 @@ important to use the appropriate flags to enable multi-process
 compilation i.e. "-j" for make, "/MP" for Visual Studio, or use the
 CMake `Ninja <https://ninja-build.org>`__ generator.
 
+For **building SimpleITK on Windows** using the CMake GUI see:
+
+.. toctree::
+  buildingWindows.rst
 
 Building Manually
------------------
+=================
 
 By not using the superbuild, you must manually specify all dependencies
 used during the building of SimpleITK instead of using the known
@@ -151,9 +156,9 @@ External CMake files in the Superbuild sub-directory.
 
 
 Additional Prerequisites
-^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------
 
-The following are dependencies you will need when not using the SuperBuild:
+These additional dependencies are required when not using the SuperBuild:
 
 #. Setup the prerequisites as described above (i.e. CMake and supported
    compiler)
@@ -164,16 +169,18 @@ The following are dependencies you will need when not using the SuperBuild:
    with SimpleITK, as future ITK versions are generally backwards
    compatible.
 
-#. `Lua <https://www.lua.org/>`__ 5.3.5
+#. `Python <https://www.python.org>`__ >= 3.9 with
+   `Jinja2 <https://jinja.palletsprojects.com/en/stable/>`__ is required
+   for code generation of the SimpleITK core C++ library.
 
-#. `SWIG <http://www.swig.org/>`__ >= 4.0
+#. `SWIG <http://www.swig.org/>`__ >= 4.3
 
-#. GTest or `Google Test <https://github.com/google/googletest>`__ >= 1.10
+#. GTest or `Google Test <https://github.com/google/googletest>`__ >= 1.15
    is needed if testing is enabled.
 
 
 Configuration and Building
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------
 
 After the source code is obtained, SimpleITK can be configured on
 Unix-like systems like so:
@@ -198,6 +205,7 @@ After proper configuration, SimpleITK can be built:
 
  make -j$(nproc)
 
+.. _advanced_build_options:
 
 Advanced Build Options
 ----------------------
@@ -247,6 +255,7 @@ be the Release configuration, as such:
  cd SimpleITK-build/SimpleITK-build
  ctest -C Release
 
+.. _installation_from_build_tree:
 
 Installation from Build Tree
 ----------------------------
@@ -260,8 +269,7 @@ To install a built python package into the system Python, as root run:
 
 .. code-block :: bash
 
- cd SimpleITK-build/Wrapping/Python
- python setup.py install
+ python -m pip install SimpleITK-build/Wrapping/Python
 
 Preferably, a Python virtual environment is created and the
 distribution installed there.
@@ -315,3 +323,46 @@ your fellow users you can install the package in a local directory:
 
  cd SimpleITK-build/Wrapping/R/Packaging
  R CMD INSTALL -l /path_to/my_R_libs SimpleITK
+
+
+Building SimpleITK Sphinx based documentation
+=============================================
+
+SimpleITK uses `Sphinx <https://www.sphinx-doc.org>`__ to create the documentation hosted on read-the-docs. To build this documentation we set up a Python environment with the appropriate packages.
+
+
+Set up Sphinx Python virtual environment
+----------------------------------------
+
+The following are steps for setting up Sphinx:
+
+#. Create a Python virtual environment ("sitkenv" is the name for the new virtual environment and its directory in this example).
+
+.. code-block :: bash
+
+ python -m venv sitkenv
+
+2. Activate the virtual environment
+
+.. code-block :: bash
+
+ $ source sitkenv/bin/activate
+ (sitkenv) $
+
+3. Install Sphinx and packages using the requirements.txt (found in SimpleITK/docs directory).
+
+.. code-block :: bash
+
+ (sitkenv) $ pip install -r SimpleITK/docs/requirements.txt
+
+
+Build documentation
+-------------------
+
+Once the Sphinx environment is configured, build the SimpleITK documentation. From the SimpleITK/docs directory (on OSX/Linux):
+
+.. code-block :: bash
+
+ (sitkenv) $ make html
+
+Results are in the SimpleITK/docs/build/html directory.

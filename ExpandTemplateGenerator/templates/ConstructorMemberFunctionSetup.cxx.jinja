@@ -1,0 +1,19 @@
+
+const detail::MemberFunctionFactory<{{name}}::MemberFunctionType> &{{name}}::GetMemberFunctionFactory()
+{
+  static detail::MemberFunctionFactory<MemberFunctionType> static_factory = [](){
+    detail::MemberFunctionFactory<MemberFunctionType> factory;
+{%- if custom_register %}
+    {{ custom_register | indent(4) }}
+{% else %}
+    factory.RegisterMemberFunctions< PixelIDTypeList, 2, 3 > ();
+{%- endif %}
+{% if vector_pixel_types_by_component %}
+    using VectorByComponentsPixelIDTypeList = {{ vector_pixel_types_by_component }};
+    using VectorAddressorType = detail::ExecuteInternalVectorImageAddressor<MemberFunctionType>;
+    factory.RegisterMemberFunctions< VectorByComponentsPixelIDTypeList, 2, 3, VectorAddressorType> ();
+{% endif %}
+    return factory;
+  }();
+  return static_factory;
+}

@@ -21,8 +21,9 @@
 
 #include "sitkCommon.h"
 #include "sitkObjectOwnedBase.h"
+#include "sitkProcessObjectDeleter.h"
 
-#include <map>
+#include <memory>
 
 
 namespace itk
@@ -43,19 +44,19 @@ class ITKLogger;
  * itk::OutputWindow. Derived instances of LoggerBase are used by an internal adaptor derived from the itk::OutputWindow
  * so that this object instances can be used in ITK.
  *
- * /sa itk::OutputWindow
+ * \sa itk::OutputWindow
  */
 class SITKCommon_EXPORT LoggerBase : public ObjectOwnedBase
 {
 public:
-  LoggerBase() = default;
+  LoggerBase();
 
   ~LoggerBase() override;
 
   virtual void
-    DisplayText(const char * t)
- #ifndef SWIGR
-  = 0
+  DisplayText(const char * t)
+#ifndef SWIGR
+    = 0
 #endif
     ;
 
@@ -113,7 +114,7 @@ public:
   explicit ITKLogger(itk::OutputWindow *);
   ~ITKLogger() override;
 
-  ITKLogger() = default;
+  ITKLogger();
   ITKLogger(const ITKLogger &);
   ITKLogger & operator=(ITKLogger);
 
@@ -143,7 +144,7 @@ public:
 
 
 private:
-  itk::OutputWindow * m_OutputWindow{ nullptr };
+  std::unique_ptr<itk::OutputWindow, ProcessObjectDeleter> m_OutputWindow;
 };
 
 } // namespace simple

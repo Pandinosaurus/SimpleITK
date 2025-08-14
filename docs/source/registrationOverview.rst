@@ -154,7 +154,7 @@ From a coordinate system standpoint ITKv4 introduced the
 images are treated similarly. As a consequence the ImageRegistrationMethod
 has methods for setting **three transformations**:
 
-1. SetInitialTransform :math:`T_o` - composed with the moving initial transform, maps
+1. SetInitialTransform :math:`T_{opt}` - composed with the moving initial transform, maps
 points from the virtual image domain to the moving image domain, modified
 during optimization.
 
@@ -167,7 +167,7 @@ the moving image domain, never modified.
 The transformation that maps points from the fixed to moving image domains is thus:
 
 .. math::
-   p_{moving}=T_o(T_m(T_f^{-1}(p_{fixed})))
+   p_{moving}=T_m(T_{opt}(T_f^{-1}(p_{fixed})))
 
 Multi Resolution Framework
 ===========================
@@ -188,6 +188,39 @@ estimate the similarity measure. Aggressive sampling can significantly reduce
 the registration runtime. The ImageRegistration method allows you to
 specify how/if to sample the voxels, `SetMetricSamplingStrategy <https://simpleitk.org/doxygen/latest/html/classitk_1_1simple_1_1ImageRegistrationMethod.html#aa49fdfae5950c2ec6e01a75df59078f6>`_, and
 if using a sampling, what percentage, `SetMetricSamplingPercentage <https://simpleitk.org/doxygen/latest/html/classitk_1_1simple_1_1ImageRegistrationMethod.html#a8b891c62404a8dc5010241fea619c932>`_.
+
+The registration framework supports three sampling strategies:
+
+1. NONE - use all voxels, sampled points are the voxel centers.
+2. REGULAR - sample every n-th voxel while traversing the image
+   in scan-line order, then within each voxel randomly
+   perturb from center.
+3. RANDOM - sample image voxels with replacement using a uniform distribution, then within each voxel randomly perturb from center.
+
+When using the REGULAR or RANDOM sampling strategies, running the same
+registration code multiple times will yield different results. To remove
+the randomness, set the pseudo-random number generator's seed in the
+`SetMetricSamplingPercentage <https://simpleitk.org/doxygen/latest/html/classitk_1_1simple_1_1ImageRegistrationMethod.html#a8b891c62404a8dc5010241fea619c932>`_
+method to a constant. The default seed value is
+wall clock time.
+
+Note that using the RANDOM sampling strategy with a 100% sampling rate is not
+equivalent to using the sampling strategy of NONE. Given an image with N voxels,
+the former randomly selects N voxels with repetition and perturbs the points
+within each voxel, the latter uses the centers of all N voxels. Thus, for
+repeated random sampling with 100% rate, different samples are produced and likely
+none of them is of the centers of all N voxels.
+
+Combining a mask with sampling is done using a rejection approach. First a sample is generated and
+then it is accepted or rejected if it is inside or outside the mask. This may cause
+problems when the mask region occupies a very small region in the original image. Because the sampling
+only discards data,the sample rate may be reduced from the requested one. For some similarity metrics (e.g. mutual information)
+this can result in an insufficient number of samples for metric value computation, leading to registration failure.
+Other metrics are more robust to small sample sizes (e.g. mean squares), but they all suffer from it.
+In such cases it is better to use a cropped version of the image for registration, possibly the mask's bounding box,
+instead of the original image with a mask.
+
+
 
 Scaling in Parameter Space
 ==========================
@@ -210,3 +243,18 @@ This is done using the Command-Observer pattern, associating callbacks with spec
 To associate a callback with a specific `event <https://simpleitk.org/doxygen/latest/html/namespaceitk_1_1simple.html#aa7399868984d99493c5a307cce373ace>`_
 use the `AddCommand <https://simpleitk.org/doxygen/latest/html/classitk_1_1simple_1_1ProcessObject.html#a2199e5cca19b45d504676a595e1f6cfd>`_
 method.
+
+Reproducibility
+===============
+
+Generally speaking, repeated registrations of the same datasets will yield slightly different results. This is
+associated with the registration framework's similarity metric computation implementation which utilizes both
+randomization and multi-threading.
+
+The primary source of variability is the use of randomization. To eliminate randomization variability,
+set the seed parameter for the `SetMetricSamplingPercentage <https://simpleitk.org/doxygen/latest/html/classitk_1_1simple_1_1ImageRegistrationMethod.html#a8b891c62404a8dc5010241fea619c932>`_ to a fixed value (e.g. `42 <https://en.wikipedia.org/wiki/42_(number)>`_).
+
+The secondary, and much more minor, source of variability has to do with the multithreading implementation, different
+order of operations in each registration run. To eliminate multithreading variability, set the number of threads to one
+via the `SetGlobalDefaultNumberOfThreads <https://simpleitk.org/doxygen/latest/html/classitk_1_1simple_1_1ProcessObject.html#a305b43330f9feb26325eadfc30695bd9>`_ method. From a practical standpoint, in the tradeoff between full reproducibility and computational efficiency with minor
+variability in results, computational efficiency is most often more important.

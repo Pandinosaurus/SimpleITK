@@ -1,0 +1,5 @@
+    friend struct detail::MemberFunctionAddressor<MemberFunctionType>;
+    {%- if vector_pixel_types_by_component %}
+    friend struct detail::ExecuteInternalVectorImageAddressor<MemberFunctionType>;
+    {%- endif %}
+    static const detail::MemberFunctionFactory<MemberFunctionType> &GetMemberFunctionFactory();

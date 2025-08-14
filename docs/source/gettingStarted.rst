@@ -12,7 +12,7 @@ In the following sections we describe how to install SimpleITK and
 auxiliary software tools.
 
 After installing SimpleITK, we recommend going over the
-:ref:`latest tutorial <lbl_tutorials_courses>` and skimming
+`virtual tutorial <https://simpleitk.org/TUTORIAL/>`_ and skimming
 the `Doxygen <http://www.simpleitk.org/doxygen/latest/html/>`__ pages for
 more information.
 
@@ -33,7 +33,8 @@ right away!
 
 Currently, **Python** binaries are available on Microsoft Windows, GNU
 Linux and Mac OS X. **C# and Java** binaries are available for
-Windows. We are also working towards supporting **R** packaging.
+Windows. **R** binaries are not available but a convenient
+`remotes based installer <https://github.com/SimpleITK/SimpleITKRInstaller>`__  for Linux and Mac is.
 
 Python binary files
 -------------------
@@ -55,12 +56,13 @@ binary wheel:
 
 .. code-block :: bash
 
- pip install SimpleITK
+ pip install simpleitk
 
-This installation requires a recent version of  pip (>=9.0), to properly detect
-compatibility with the `PEP 427
-<https://www.python.org/dev/peps/pep-0427/>`__ tags in the wheel
-filenames. Pip can be updated using ``pip install -U pip``.
+This installation requires a recent version of pip, to properly detect
+compatibility with the filename tags`PEP 427
+<https://www.python.org/dev/peps/pep-0427/>`__ , stable API
+`PEP 425 <https://peps.python.org/pep-0425/>`__ , and package
+name normalization. Pip can be updated using ``pip install -U pip``.
 Also the Python environment must be compatible with one of
 the pre-compiled binary wheels.
 
@@ -72,18 +74,22 @@ Alternatively, the wheels can be manually downloaded from `GitHub releases
 Conda-based distributions (Anaconda, Miniconda)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-From the command line prompt, execute:
+SimpleITK Conda binaries are available for the conda-forge ecosystem. To get started run the following command:
 
 .. code-block :: bash
 
- conda install -c simpleitk simpleitk
+ conda create --name sitk python=3.11 simpleitk --channel conda-forge --override-channels
+ conda activate sitk
 
-Beta and release candidate packages are also available on Anaconda cloud
-under the dev label:
+This will create and activate a new conda environment named ``sitk`` with Python 3.11 and SimpleITK installed from the `Anaconda
+conda-forge channel <https://anaconda.org/conda-forge/simpleitk>`__. The version of python can be changed to any
+supported version.
 
-.. code-block :: bash
-
- conda install -c simpleitk/label/dev simpleitk
+The above ``create`` command creates an environment which only used the conda-forge channel. This follows Conda-forge's
+recommendation to not mix the ``defaults`` channel with the conda-forge channel. Mixing the channels can cause package
+dependency issues, missing libraries, and a non-functional virtual environment. Alternatively, the
+`miniforge <https://github.com/conda-forge/miniforge>`__ installer can be used to create dedicated conda-forge
+environments.
 
 
 C# binary files
@@ -120,20 +126,26 @@ at :ref:`setup SimpleITK with Java <setup-java>`.
 R binary files
 --------------
 
-R binaries are currently only available for Linux and Mac.
+R binaries are not available.
 
-SimpleITK/R is installed using a devtools based installer
-(`GitHub Repository <https://github.com/SimpleITK/SimpleITKRInstaller>`__).
-Strictly speaking, this is not a binary distribution, but it is a convenient
-way of automatically compiling and installing on a system.
+For Linux and Mac one can easily build and install SimpleITK from source using a `remotes <https://cran.r-project.org/web/packages/remotes/readme/README.html>`__ based installer
+referencing this `GitHub Repository <https://github.com/SimpleITK/SimpleITKRInstaller>`__.
 
-This installation requires `R devtools <https://github.com/r-lib/devtools>`__,
+This installation requires `R remotes <https://github.com/r-lib/remotes>`__,
 `CMake <https://cmake.org/>`__, `git <https://git-scm.com/>`__, and a compiler
 in the path.
 
+One line commands to build and install the package:
+
 .. code-block :: bash
 
-  devtools::install_github("SimpleITK/SimpleITKRInstaller")
+  remotes::install_github("SimpleITK/SimpleITKRInstaller")
+
+or using six cores for compilation (change this number based on your hardware):
+
+.. code-block :: bash
+
+  remotes::install_github("SimpleITK/SimpleITKRInstaller", configure.vars=c("MAKEJ=6"))
 
 
 Latest binaries
@@ -150,7 +162,7 @@ upgrade to the latest pre-release Python binary package run:
 
 .. code-block :: bash
 
- pip install --upgrade --pre SimpleITK --find-links https://github.com/SimpleITK/SimpleITK/releases/tag/latest
+ pip install --upgrade --pre simpleitk --find-links https://github.com/SimpleITK/SimpleITK/releases/tag/latest
 
 
 Recommended Software
@@ -164,7 +176,7 @@ SimpleITK has a built in function,
 which can be used for viewing images in an interactive session.
 By default this Show function searches for an installed
 `Fiji <https://fiji.sc>`__ to display images.  If Fiji is not found,
-then it searches for `ImageJ <http://rsbweb.nih.gov/ij/>`__. Fiji/ImageJ were
+then it searches for `ImageJ <https://imagej.net/ij/>`__. Fiji/ImageJ were
 chosen because they can handle all the image types that SimpleITK
 supports, including 3D vector images with n components per pixel.
 
@@ -185,7 +197,7 @@ IPython and Jupyter
 -------------------
 
 For python users, `IPython <http://ipython.org/>`__ with
-`Jupyter <http://jupyter.org>`__ is terrific environment to perform
+`Jupyter <http://jupyter.org>`__ is a terrific environment to perform
 interactive computing for image processing.  The addition of the
 `numpy <https://numpy.org>`__ and `scipy <https://www.scipy.org>`__ packages
 creates a powerful interactive development environment.

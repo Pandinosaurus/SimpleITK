@@ -17,13 +17,12 @@
 #
 # =========================================================================
 
-from __future__ import print_function
-from __future__ import division
+""" Example script showing Fast Fourier Transform convolution in SimpleITK """
 
-import SimpleITK as sitk
 import sys
 import os
 import math
+import SimpleITK as sitk
 
 if len(sys.argv) < 4:
     print("Usage: FFTConvolution <input> <kernel> <output>")
@@ -90,7 +89,7 @@ img = sitk.Crop(img, [128] * 2, [128] * 2)
 # write the output image the same type as the input
 sitk.WriteImage(sitk.Cast(img, pixelID), outputFileName)
 
-if ("SITK_NOSHOW" not in os.environ):
+if "SITK_NOSHOW" not in os.environ:
     sitk.Show(sitk.ReadImage(inputFileName), "original")
     sitk.Show(sitk.ReadImage(kernelFileName), "kernel")
     sitk.Show(sitk.Cast(img, pixelID), "FFT_Convolution")

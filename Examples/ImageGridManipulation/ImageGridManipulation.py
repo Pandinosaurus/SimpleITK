@@ -17,10 +17,11 @@
 #
 # =========================================================================
 
-from __future__ import print_function
+""" A SimpleITK example demonstrating various image grid manipulation
+    techniques. """
 
-import SimpleITK as sitk
 import sys
+import SimpleITK as sitk
 
 if len(sys.argv) < 3:
     print("Usage: " + sys.argv[0] + " <input-1> <input-2>")
@@ -42,8 +43,7 @@ channel3_image = select.Execute(joined_image, 2, sitk.sitkUInt8)
 
 # Recompose image (should be same as joined_image)
 compose = sitk.ComposeImageFilter()
-composed_image = compose.Execute(channel1_image, channel2_image,
-                                 channel3_image)
+composed_image = compose.Execute(channel1_image, channel2_image, channel3_image)
 
 # Select same subregion using image slicing operator
 sliced_image = composed_image[100:400, 100:400, 0]
@@ -59,6 +59,7 @@ extracted_image = extract.Execute(composed_image)
 # dimensional image with depth of 1)
 crop = sitk.CropImageFilter()
 crop.SetLowerBoundaryCropSize([100, 100, 0])
-crop.SetUpperBoundaryCropSize([composed_image.GetWidth() - 400,
-                               composed_image.GetHeight() - 400, 1])
+crop.SetUpperBoundaryCropSize(
+    [composed_image.GetWidth() - 400, composed_image.GetHeight() - 400, 1]
+)
 cropped_image = crop.Execute(composed_image)

@@ -17,7 +17,8 @@
 #
 # =========================================================================
 
-from __future__ import print_function
+
+""" Example of the SmoothRecursiveGaussian function in SimpleITK """
 
 import os
 import sys
@@ -25,7 +26,7 @@ import sys
 import SimpleITK as sitk
 
 if len(sys.argv) < 4:
-    print("Usage: %s <input> <sigma> <output>" % (sys.argv[0]))
+    print(f"Usage: {sys.argv[0]} <input> <sigma> <output>")
     sys.exit(1)
 
 image = sitk.ReadImage(sys.argv[1])
@@ -36,5 +37,5 @@ image = sitk.SmoothingRecursiveGaussian(image, float(sys.argv[2]))
 
 sitk.WriteImage(sitk.Cast(image, pixelID), sys.argv[3])
 
-if ("SITK_NOSHOW" not in os.environ):
+if "SITK_NOSHOW" not in os.environ:
     sitk.Show(sitk.Cast(image, pixelID), "Simple Gaussian Procedural")

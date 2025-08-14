@@ -23,6 +23,45 @@ Simple in the name. The main ITK
 elements omitted from SimpleITK are the pipeline architecture,
 spatial objects framework, point sets, and the mesh framework.
 
+What is the toolkit's Python version support policy?
+----------------------------------------------------
+
+For the Python programming language, SimpleITK stops providing binary packages when
+the Python version has reached end-of-life status. Extensions may be made such as
+when the EOL Python version is included as part of a long-term support
+operating system version. If you need a newer SimpleITK binary than the one available
+for your Python version you can :ref:`build it on your own<building_simpleitk>`.
+
+How do I use the SimpleElastix framework in SimpleITK?
+------------------------------------------------------
+
+SimpleITK binary distributions do not include the SimpleElastix framework. To use
+the version of SimpleElastix included in SimpleITK, you will need to
+:ref:`build it on your local machine <building_simpleitk>`
+using the SuperBuild configuration and turn on the SimpleITK_USE_ELASTIX flag in
+addition to the relevant WRAP_LANGUAGE flags for the desired programming languages.
+
+SimpleITK failed to read my DICOM image, what can I do to resolve this issue?
+-----------------------------------------------------------------------------
+
+To understand the reason for this failure we recommend using David Clunie's
+`Dicom3tools <https://dclunie.com/dicom3tools.html>`_. Specifically, the *dcidvfy* program
+to verify standard compliance and identify issues with the file and *dcdump* to look at the
+file's meta-data contents.
+
+SimpleITK binary distributions include the GDCM library which is used by default to
+read DICOM images. In some cases it fails to read the image. Fortunately, there is an additional
+optional DICOM IO module, DCMTK. To use the DCMTK IO you will need to
+:ref:`build SimpleITK <building_simpleitk>` locally using the
+SuperBuild configuration. Set CMake's :ref:`advanced options <advanced_build_options>`
+to include -D Module_ITKIODCMTK:BOOL=ON in addition to turning on the relevant WRAP_LANGUAGE flag
+for your programming language of choice. Then :ref:`install from the build tree <installation_from_build_tree>`.
+
+When you attempt to read the image now, both GDCM and DCMTK
+are available. If you do not specify which one to use, the toolkit will automatically try GDCM and then
+DCMTK. Additional information describing SimpleITK's image IO mechanism and how to select a specific IO is available
+:ref:`here <image-io>`.
+
 
 Installation
 ============
@@ -59,8 +98,64 @@ This issue can be resolved by installing the appropriate
 `Redistributable for Visual Studio <https://www.microsoft.com/en-us/download/details.aspx?id=48145>`__ package.
 
 
+Why am I getting "DllNotFoundException: Unable to load DLL 'SimpleITKCSharpNative'" when running a CSharp application on Windows?
+---------------------------------------------------------------------------------------------------------------------------------
+This error message can be the result of an incomplete installation of SimpleITK
+in the CSharp application.  Below is the complete error message that can result:
+
+.. code-block :: bash
+
+  System.TypeInitializationException: 'The type initializer for 'itk.simple.SimpleITKPINVOKE' threw an exception.'
+
+  TypeInitializationException: The type initializer for 'SWIGExceptionHelper' threw an exception.
+
+  DllNotFoundException: Unable to load DLL 'SimpleITKCSharpNative': The specified module could not be found. (Exception from HRESULT: 0x8007007E)
+
+
+The application is missing the SimpleITK dynamically loaded library (DLL).  To
+fix this problem, follow the instructions in the
+`Add Native Library <https://simpleitk.readthedocs.io/en/master/setUp.html#add-native-library>`__
+section of the SimpleITK Visual Studio/C# build instructions.
+
 How to Use
 ==========
+
+How many threads should I use when using SimpleITK and performing multiprocessing?
+----------------------------------------------------------------------------------
+
+SimpleITK multi-threads most image filters to utilize all virtual cores
+available to the process. By default the number of threads used by these multi-threaded
+filters is equivalent to the number of detected cores. If code is run in a container,
+`docker <https://www.docker.com/>`_, or using a virtual machine this may not match
+the actual number of available cores. When this behavior is combined with
+multi-processing, particularly in Python, it can overwhelm the underlying machine
+as the number of concurrent threads is multiplied by the number of processes.
+Therefore, there are cases where you may want to set the default number of threads in
+SimpleITK to 1 and only use multiprocessing to obtain the benefits of parallel
+processing in a well controlled manner.
+
+Controlling the number of processes is external to SimpleITK.
+Controlling the number of threads is done via the `ProcessObject interface <https://simpleitk.org/doxygen/latest/html/classitk_1_1simple_1_1ProcessObject.html>`_ which allows for getting and setting a specific filter instance's number of threads or the
+global default number of threads for all filters. Both options are shown below.
+
+.. code-block :: python
+
+  import SimpleITK as sitk
+
+  print(f"Global default number of threads: {sitk.ProcessObject.GetGlobalDefaultNumberOfThreads()}")
+  filter = sitk.DiscreteGaussianImageFilter()
+  print(f"Filter number of threads, default: {filter.GetNumberOfThreads()}")
+
+  # Set the number of threads for a specific filter
+  filter.SetNumberOfThreads(3)
+  print(f"Filter number of threads, modified: {filter.GetNumberOfThreads()}")
+
+  # Set the default number of threads for all filters
+  sitk.ProcessObject.SetGlobalDefaultNumberOfThreads(6)
+  filter2 = sitk.RecursiveGaussianImageFilter()
+  print(f"Second filter number of threads, default: {filter2.GetNumberOfThreads()}")
+
+
 
 What filters are currently available in SimpleITK?
 --------------------------------------------------
@@ -90,7 +185,7 @@ programmatically hard code this header information. The suggested way is
 to create a Meta image header file (\*.mhd) which references the raw
 data file and describes the size and type of the data. The documentation
 on how to write a Meta image header can be found
-`here <https://www.itk.org/Wiki/MetaIO/Documentation#Reading_a_Brick-of-Bytes_.28an_N-Dimensional_volume_in_a_single_file.29>`__.
+`here <https://docs.itk.org/en/latest/learn/metaio.html#reading-a-brick-of-bytes-an-n-dimensional-volume-in-a-single-file>`__.
 
 The following is a sample Meta image header file, perhaps of name
 sample.mhd:
@@ -105,6 +200,34 @@ sample.mhd:
 
 An example implementing this approach is available here :ref:`here <lbl_raw_image_reading>`.
 
+
+Why does my image appear to be empty / all black / blank when visualized?
+-------------------------------------------------------------------------
+
+There are two possible reasons for this:
+
+#. The image is indeed empty. This is rarely the case, and indicates that there is something incorrect with the code, will require debugging.
+#. The image contains very low values (1, 2, 3...). This is very common with segmentation and :ref:`binary mask <lbl_conventions_mask_image>` images. What you are experiencing is an issue with data visualization, not with the data itself. The code below illustrates the difference, and shows how to quickly visualize such images using the existing SimpleITK functionality.
+
+.. code-block :: python
+
+  import SimpleITK as sitk
+
+  # Create segmentation image
+  segmentation_image = sitk.Image([128,128], sitk.sitkUInt8)
+  segmentation_image[40:50,20:120] = 1
+  segmentation_image[50:60,20:120] = 2
+  segmentation_image[60:70,20:120] = 3
+
+  # When visualized with Fiji, image looks all black. To see the data
+  # change the display settings Image->Adjust->Brightness/Contrast.
+  sitk.Show(segmentation_image)
+
+  # For quick visualization, convert to float and add
+  # 255 so that the data is immediately visible in Fiji.
+  sitk.Show(sitk.Cast(segmentation_image,sitk.sitkFloat32) + 255)
+
+
 .. _lbl_imageJ_not_found:
 
 Why isn't Fiji or ImageJ found by the Show function (RuntimeError: Exception thrown...)?
@@ -113,7 +236,7 @@ Why isn't Fiji or ImageJ found by the Show function (RuntimeError: Exception thr
 The SimpleITK ``Show`` function expects the Fiji or ImageJ application to be
 installed in specific locations. The recommended installation locations are:
 
-- On Windows: in your user directory (e.g. C:\\Users\\your_user_name\\Fiji.app).
+- On Windows: in your user directory (e.g. C:\\Users\\your_user_name\\Fiji.app or C:\\Users\\your_user_name\\Fiji).
 - On Linux: in ~/bin.
 - On Mac: in /Applications or ~/Applications.
 
@@ -239,8 +362,7 @@ Python! <https://docs.python-guide.org/en/latest/>`__:
     1.x but, Project Y needs 4.x” dilemma, and keeps your global
     site-packages directory clean and manageable.
 
-Programs for creating virtual environments include `virtualenv and
-pyvenv <https://packaging.python.org/en/latest/installing/#creating-virtual-environments>`__
+Programs for creating virtual environments include `venv <https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment>`__
 for generic Python distributions,
 `conda <https://conda.pydata.org/docs/using/envs.html>`__ for the
 anaconda distribution, and
@@ -254,6 +376,37 @@ The :ref:`Generic Python Wheels <installation-generic-python>`
 frequently seem to work with the Enthought Canopy Python
 distribution. However, we recommend compiling SimpleITK
 explicitly against this Python distribution to ensure compatibility.
+
+How do I read an image with a special character in the filename?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Special characters are non-ANSI characters, which require a non-ASCII encoding for representation. Unicode is the
+modern standard with UTF-8 being the most common. The underlying ITK API calls uses bytes to represent the filename which
+is compatible with UTF-8. This works on modern POSIX and MacOS systems. However, on Windows, the default encoding is
+an alternative 8-bit encoding and wide UTF-16 is used to represent Unicode code points.
+
+The Windows Operating Systems since about 2020 can be configured to use UTF-8 as the default encoding. This setting
+can be found under "All Settings -> Time & Language -> Language -> "Administrative Language Settings" and the option
+"Beta: Use Unicode UTF-8 for worldwide language support". However, this may change in the future and may have unintended
+consequences for other languages.
+
+An alternative, is to set the character locale to UTF-8 in the Python script. This can be done with the following
+command:
+
+.. code-block :: python
+
+    import locale
+    locale.setlocale( locale.LC_ALL, "en_US.UTF-8" )
+
+
+There are related Python Enhancement Proposals (PEP) related to encodings:
+ * `PEP 528 <https://www.python.org/dev/peps/pep-0528/>`_
+ * `PEP 529 <https://www.python.org/dev/peps/pep-0529/>`_.
+ * `PEP 540 <https://www.python.org/dev/peps/pep-0540/>`_.
+ * `PEP 686 <https://www.python.org/dev/peps/pep-0686/>`_.
+
+
+https://docs.python.org/3/using/windows.html#utf-8-mode
 
 Tcl
 ---
@@ -332,6 +485,13 @@ What Configurations on Windows are Supported For Building?
 
 We recommend using at least Microsoft Visual Studio 15 (2017) with MSVC v140 toolset.
 
+Path Length Issues on Windows
+-----------------------------
+The location of the build and source directories on Windows can cause the build
+to fail.  By default, Windows does not allow path lengths longer than 260 characters.
+
+See `Windows Path Length <windowsPathLength.html>`__ for more information.
+
 
 Where is the Test Data?
 -----------------------
@@ -341,7 +501,7 @@ the source code. It is mirrored on several data repositories on the web.
 
 If the source code was obtained from the git repository, the test data should
 be downloaded as part of the build process via the CMake `ExternalData
-<https://cmake.org/cmake/help/v3.10/module/ExternalData.html>`__ module.
+<https://cmake.org/cmake/help/latest/module/ExternalData.html>`__ module.
 
 A tar-ball of the "SimpleITKData" can be downloaded for
 a release from the `GitHub Assets

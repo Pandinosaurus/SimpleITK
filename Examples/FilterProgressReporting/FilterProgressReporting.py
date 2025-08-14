@@ -17,6 +17,9 @@
 #
 # =========================================================================
 
+
+""" A SimpleITK example demonstrating filter progress reporting. """
+
 import os
 import sys
 
@@ -29,13 +32,19 @@ if len(sys.argv) < 4:
 
 ##! [python director command]
 class MyCommand(sitk.Command):
+    """ Sample command class that prints the progress of the process object. """
     def __init__(self, po):
+        """ Constructor, note that the base class constructor is called here. """
         # required
-        super(MyCommand, self).__init__()
+        super().__init__()
         self.processObject = po
 
     def Execute(self):
-        print(f"{self.processObject.GetName()} Progress: {self.processObject.GetProgress():1.2f}")
+        """ Method that is called by the process object. """
+        print(
+            f"{self.processObject.GetName()}"
+            + f" Progress: {self.processObject.GetProgress():1.2f}"
+        )
 
 
 ##! [python director command]
@@ -67,5 +76,5 @@ writer = sitk.ImageFileWriter()
 writer.SetFileName(sys.argv[3])
 writer.Execute(image)
 
-if ("SITK_NOSHOW" not in os.environ):
+if "SITK_NOSHOW" not in os.environ:
     sitk.Show(image, "Simple Gaussian")

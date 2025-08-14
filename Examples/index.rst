@@ -25,11 +25,13 @@ Examples
   link_ImageRegistrationMethod2_docs
   link_ImageRegistrationMethod3_docs
   link_ImageRegistrationMethod4_docs
+  link_ImageRegistrationOptimizerWeights_docs
   link_ImageRegistrationMethodBSpline1_docs
   link_ImageRegistrationMethodBSpline2_docs
   link_ImageRegistrationMethodBSpline3_docs
   link_ImageRegistrationMethodDisplacement1_docs
   link_ImageRegistrationMethodExhaustive_docs
+  link_LandmarkRegistration_docs
   link_ITKIntegration_docs
   link_N4BiasFieldCorrection_docs
   link_SimpleGaussian_docs
@@ -39,3 +41,4 @@ Examples
   link_AdvancedImageReading_docs
   link_ImageIOSelection_docs
   link_RawImageReading_docs
+  link_JavaGetSetBuffer_docs.rst

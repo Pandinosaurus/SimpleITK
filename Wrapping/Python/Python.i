@@ -19,6 +19,10 @@
 
 %begin %{
 #include "sitkPython.h"
+// Needed by SWIG, but not in Stable Python API.
+// https://github.com/swig/swig/pull/2856
+#define NOMINMAX
+#include "stdlib.h"
 %}
 
 %{
@@ -26,6 +30,7 @@
 %}
 
 %include "PythonDocstrings.i"
+%include "sitkPathType.i"
  //%feature("autodoc", "1");
 
 // ignore overload methods of int type when there is an enum
@@ -83,5 +88,32 @@
 };
 
 %feature("director") itk::simple::LoggerBase;
+
+
+
+%pythonappend itk::simple::ImageRegistrationMethod::Execute(const Image &, const Image &)
+{
+  val = val.Downcast()
+};
+
+%pythonappend itk::simple::LandmarkBasedTransformInitializerFilter::Execute(const Transform &)
+{
+  val = val.Downcast()
+};
+
+%pythonappend itk::simple::LandmarkBasedTransformInitializer
+{
+  val = val.Downcast()
+};
+
+%pythonappend itk::simple::CenteredTransformInitializerFilter::Execute
+{
+  val = val.Downcast()
+};
+
+%pythonappend itk::simple::CenteredTransformInitializer
+{
+  val = val.Downcast()
+};
 
 #endif

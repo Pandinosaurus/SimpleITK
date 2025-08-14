@@ -1,26 +1,27 @@
-'''=========================================================================
-'
-'  Copyright NumFOCUS
-'
-'  Licensed under the Apache License, Version 2.0 (the "License");
-'  you may not use this file except in compliance with the License.
-'  You may obtain a copy of the License at
-'
-'         http://www.apache.org/licenses/LICENSE-2.0.txt
-'
-'  Unless required by applicable law or agreed to in writing, software
-'  distributed under the License is distributed on an "AS IS" BASIS,
-'  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-'  See the License for the specific language governing permissions and
-'  limitations under the License.
-'
-'========================================================================='''
+#!/usr/bin/env python
+# =========================================================================
+#
+#  Copyright NumFOCUS
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0.txt
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+# =========================================================================
 
-from __future__ import print_function
+""" An example script showing the use of the ConnectedThresholdImageFilter """
 
-import SimpleITK as sitk
 import sys
 import os
+import SimpleITK as sitk
 
 #
 # Check Command Line
@@ -28,7 +29,8 @@ import os
 if len(sys.argv) < 7:
     print(
         "Usage: ConnectedThresholdImageFilter inputImage outputImage",
-        "lowerThreshold upperThreshold seedX seedY [seed2X seed2Y ... ]")
+        "lowerThreshold upperThreshold seedX seedY [seed2X seed2Y ... ]",
+    )
     sys.exit(1)
 
 #
@@ -70,5 +72,5 @@ writer = sitk.ImageFileWriter()
 writer.SetFileName(sys.argv[2])
 writer.Execute(image)
 
-if ("SITK_NOSHOW" not in os.environ):
+if "SITK_NOSHOW" not in os.environ:
     sitk.Show(image, "ConntectedThreshold")

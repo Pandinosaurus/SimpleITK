@@ -1,20 +1,20 @@
 /*=========================================================================
-*
-*  Copyright NumFOCUS
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*         http://www.apache.org/licenses/LICENSE-2.0.txt
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*
-*=========================================================================*/
+ *
+ *  Copyright NumFOCUS
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
 
 // These examples are used in the I/O documentation page. The IO.rst file
 // pulls the code examples based their line numbers in this file. So any
@@ -28,8 +28,10 @@
 #include <typeinfo>
 
 
-void example1(std::string inputImageFileName, std::string outputImageFileName)
-  {
+void
+example1(std::string inputImageFileName, std::string outputImageFileName)
+{
+  // START_OO_IMAGE_READER_WRITER_EXAMPLE
   itk::simple::ImageFileReader reader;
   reader.SetImageIO("PNGImageIO");
   reader.SetFileName(inputImageFileName);
@@ -40,31 +42,41 @@ void example1(std::string inputImageFileName, std::string outputImageFileName)
   itk::simple::ImageFileWriter writer;
   writer.SetFileName(outputImageFileName);
   writer.Execute(image);
-  }
+  // END_OO_IMAGE_READER_WRITER_EXAMPLE
+}
 
-void example2(std::string inputImageFileName, std::string outputImageFileName)
-  {
+void
+example2(std::string inputImageFileName, std::string outputImageFileName)
+{
+  // START_PROCEDURAL_IMAGE_READER_WRITER_EXAMPLE
   itk::simple::Image image;
   image = itk::simple::ReadImage(inputImageFileName, itk::simple::sitkUnknown, "PNGImageIO");
 
   itk::simple::WriteImage(image, outputImageFileName);
-  }
+  // END_PROCEDURAL_IMAGE_READER_WRITER_EXAMPLE
+}
 
-void example3()
-  {
+void
+example3()
+{
+  // START_PROCEDURAL_TRANSFORM_READER_WRITER_EXAMPLE
   itk::simple::Euler2DTransform basic_transform;
-  basic_transform.SetTranslation(std::vector<double> {2.0, 3.0});
+  basic_transform.SetTranslation(std::vector<double>{ 2.0, 3.0 });
 
   itk::simple::WriteTransform(basic_transform, "euler2D.tfm");
   itk::simple::Transform read_result = itk::simple::ReadTransform("euler2D.tfm");
 
   assert(typeid(basic_transform) != typeid(read_result));
-  }
+  // END_PROCEDURAL_TRANSFORM_READER_WRITER_EXAMPLE
+}
 
 
-int main ( int argc, char* argv[] ) {
+int
+main(int argc, char * argv[])
+{
 
-  if ( argc < 3 ) {
+  if (argc < 3)
+  {
     std::cerr << "Usage: " << argv[0] << " <input> <output>\n";
     return 1;
   }

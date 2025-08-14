@@ -17,18 +17,23 @@
 #
 # =========================================================================
 
-import SimpleITK as sitk
+""" A SimpleITK example demonstrating the classic Demons image registration. """
+
 import sys
 import os
+import SimpleITK as sitk
 
 
-def command_iteration(filter):
-    print(f"{filter.GetElapsedIterations():3} = {filter.GetMetric():10.5f}")
+def command_iteration(sitk_filter):
+    """ Callback invoked when the filter processes an iteration. """
+    print(f"{sitk_filter.GetElapsedIterations():3} = {sitk_filter.GetMetric():10.5f}")
 
 
 if len(sys.argv) < 4:
     print(
-        f"Usage: {sys.argv[0]} <fixedImageFilter> <movingImageFile> <outputTransformFile>")
+        f"Usage: {sys.argv[0]}"
+        + " <fixedImageFilter> <movingImageFile> <outputTransformFile>"
+    )
     sys.exit(1)
 
 fixed = sitk.ReadImage(sys.argv[1], sitk.sitkFloat32)
@@ -61,7 +66,7 @@ outTx = sitk.DisplacementFieldTransform(displacementField)
 
 sitk.WriteTransform(outTx, sys.argv[3])
 
-if ("SITK_NOSHOW" not in os.environ):
+if "SITK_NOSHOW" not in os.environ:
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixed)
     resampler.SetInterpolator(sitk.sitkLinear)
@@ -74,5 +79,5 @@ if ("SITK_NOSHOW" not in os.environ):
     # Use the // floor division operator so that the pixel type is
     # the same for all three images which is the expectation for
     # the compose filter.
-    cimg = sitk.Compose(simg1, simg2, simg1 // 2. + simg2 // 2.)
+    cimg = sitk.Compose(simg1, simg2, simg1 // 2.0 + simg2 // 2.0)
     sitk.Show(cimg, "DeformableRegistration1 Composition")

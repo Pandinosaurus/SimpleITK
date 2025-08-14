@@ -1,20 +1,20 @@
 /*=========================================================================
-*
-*  Copyright NumFOCUS
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*         http://www.apache.org/licenses/LICENSE-2.0.txt
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*
-*=========================================================================*/
+ *
+ *  Copyright NumFOCUS
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
 #ifndef sitkInterpolator_h
 #define sitkInterpolator_h
 
@@ -22,12 +22,11 @@
 #include <ostream>
 
 
-namespace itk
-{
-namespace simple
+namespace itk::simple
 {
 
-enum InterpolatorEnum {
+enum InterpolatorEnum
+{
   /** \brief Nearest-neighbor interpolation
    * \sa itk::NearestNeighborInterpolateImageFunction
    */
@@ -38,10 +37,31 @@ enum InterpolatorEnum {
    */
   sitkLinear = 2,
 
+  /** \brief B-Spline of order 1 interpolation
+   * \sa itk::BSplineInterpolateImageFunction
+   */
+  sitkBSpline1 = 21,
+
+  /** \brief B-Spline of order 2 interpolation
+   * \sa itk::BSplineInterpolateImageFunction
+   */
+  sitkBSpline2 = 22,
+
   /** \brief B-Spline of order 3 interpolation
    * \sa itk::BSplineInterpolateImageFunction
    */
-  sitkBSpline = 3,
+  sitkBSpline = 23,
+  sitkBSpline3 = 23,
+
+  /** \brief B-Spline of order 4 interpolation
+   * \sa itk::BSplineInterpolateImageFunction
+   */
+  sitkBSpline4 = 24,
+
+  /** \brief B-Spline of order 5 interpolation
+   * \sa itk::BSplineInterpolateImageFunction
+   */
+  sitkBSpline5 = 25,
 
   /** \brief Gaussian interpolation
    *
@@ -58,6 +78,13 @@ enum InterpolatorEnum {
    * \sa itk:LabelImageGaussianInterpolateImageFunction
    */
   sitkLabelGaussian = 5,
+
+  /** \brief Linear interpolation for multi-label images
+   *
+   * \sa itk:LabelImageGenericInterpolateImageFunction
+   * \sa itk:LinearInterpolateImageFunction
+   */
+  sitkLabelLinear = 26,
 
   /** \brief Windowed sinc interpolation
    *
@@ -104,7 +131,7 @@ enum InterpolatorEnum {
    */
   sitkBlackmanWindowedSinc = 10,
 
-  /** \brief Interpolator for a BSpline coefficient image
+  /** \brief Interpolator for a <b>BSpline coefficient image</b>
    *
    *  This interpolator should be used with the resampling the image
    *  intensities of a BSpline coefficient image. The order specifies
@@ -114,10 +141,20 @@ enum InterpolatorEnum {
    *  \sa itk::BSplineResampleImageFunction
    */
   sitkBSplineResampler = 11,
+  /** \brief Interpolator for a <b>BSpline coefficient image</b>, order 3.
+   */
   sitkBSplineResamplerOrder3 = 11,
+  /** \brief Interpolator for a <b>BSpline coefficient image</b>, order 1.
+   */
   sitkBSplineResamplerOrder1 = 12,
+  /** \brief Interpolator for a <b>BSpline coefficient image</b>, order 2.
+   */
   sitkBSplineResamplerOrder2 = 13,
+  /** \brief Interpolator for a <b>BSpline coefficient image</b>, order 4.
+   */
   sitkBSplineResamplerOrder4 = 14,
+  /** \brief Interpolator for a <b>BSpline coefficient image</b>, order 5.
+   */
   sitkBSplineResamplerOrder5 = 15
 
 
@@ -127,11 +164,11 @@ enum InterpolatorEnum {
 /**
  * Convert Interpolator enum to a string for printing etc..
  */
-SITKCommon_EXPORT std::ostream& operator<<(std::ostream& os, const InterpolatorEnum i);
+SITKCommon_EXPORT std::ostream &
+                  operator<<(std::ostream & os, const InterpolatorEnum i);
 #endif
 
-} // end namespace simple
-} // end namespace itk
+} // namespace itk::simple
 
 
 #endif // sitkInterpolator_h

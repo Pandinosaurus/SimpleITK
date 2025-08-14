@@ -17,18 +17,26 @@
 #
 # =========================================================================
 
-import SimpleITK as sitk
+""" A SimpleITK example demonstrating fast symmetric forces Demons image
+    registation. """
+
 import sys
 import os
+import SimpleITK as sitk
 
 
-def command_iteration(filter):
-    print(f"{filter.GetElapsedIterations():3} = {filter.GetMetric():10.5f}")
+def command_iteration(sitk_filter):
+    """ Callback invoked when the filter progresses. """
+    print(f"{sitk_filter.GetElapsedIterations():3} = {sitk_filter.GetMetric():10.5f}")
 
 
 if len(sys.argv) < 4:
-    print("Usage:", sys.argv[0], "<fixedImageFilter> <movingImageFile>",
-          "[initialTransformFile] <outputTransformFile>")
+    print(
+        "Usage:",
+        sys.argv[0],
+        "<fixedImageFilter> <movingImageFile>",
+        "[initialTransformFile] <outputTransformFile>",
+    )
     sys.exit(1)
 
 fixed = sitk.ReadImage(sys.argv[1])
@@ -36,7 +44,7 @@ fixed = sitk.ReadImage(sys.argv[1])
 moving = sitk.ReadImage(sys.argv[2])
 
 matcher = sitk.HistogramMatchingImageFilter()
-if (fixed.GetPixelID() in (sitk.sitkUInt8, sitk.sitkInt8)):
+if fixed.GetPixelID() in (sitk.sitkUInt8, sitk.sitkInt8):
     matcher.SetNumberOfHistogramLevels(128)
 else:
     matcher.SetNumberOfHistogramLevels(1024)
@@ -77,7 +85,7 @@ outTx = sitk.DisplacementFieldTransform(displacementField)
 
 sitk.WriteTransform(outTx, sys.argv[3])
 
-if ("SITK_NOSHOW" not in os.environ):
+if "SITK_NOSHOW" not in os.environ:
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixed)
     resampler.SetInterpolator(sitk.sitkLinear)
@@ -87,5 +95,5 @@ if ("SITK_NOSHOW" not in os.environ):
     out = resampler.Execute(moving)
     simg1 = sitk.Cast(sitk.RescaleIntensity(fixed), sitk.sitkUInt8)
     simg2 = sitk.Cast(sitk.RescaleIntensity(out), sitk.sitkUInt8)
-    cimg = sitk.Compose(simg1, simg2, simg1 // 2. + simg2 // 2.)
+    cimg = sitk.Compose(simg1, simg2, simg1 // 2.0 + simg2 // 2.0)
     sitk.Show(cimg, "DeformableRegistration1 Composition")

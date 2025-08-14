@@ -17,52 +17,65 @@
 #
 # =========================================================================
 
-# These examples are used in the I/O documentation page. The IO.rst file
-# pulls the code examples based their line numbers in this file. So any
-# change in the line numbers of the code below will break the I/O page.
+
+
+"""
+These examples are used in the I/O documentation page. The IO.rst file
+pulls the code examples based their line numbers in this file. So any
+change in the line numbers of the code below will break the I/O page.
+"""
+
+import sys
 
 # A simple image input/output example
 #
 def example1(inputImageFileName, outputImageFileName):
+    """ A Simple Image Input/Output Example """
 
-  import SimpleITK as sitk
+    import SimpleITK as sitk
 
-  reader = sitk.ImageFileReader()
-  reader.SetImageIO("PNGImageIO")
-  reader.SetFileName(inputImageFileName)
-  image = reader.Execute();
+    #START_OO_IMAGE_READER_WRITER_EXAMPLE
+    reader = sitk.ImageFileReader()
+    reader.SetImageIO("PNGImageIO")
+    reader.SetFileName(inputImageFileName)
+    image = reader.Execute()
 
-  writer = sitk.ImageFileWriter()
-  writer.SetFileName(outputImageFileName)
-  writer.Execute(image)
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(outputImageFileName)
+    writer.Execute(image)
+    #END_OO_IMAGE_READER_WRITER_EXAMPLE
 
 
 # A simple procedural image input/output example
 #
 def example2(inputImageFileName, outputImageFileName):
+    """ A Simple Procedural Image Input/Output Example """
 
-  import SimpleITK as sitk
+    import SimpleITK as sitk
 
-  image = sitk.ReadImage(inputImageFileName, imageIO="PNGImageIO")
-  sitk.WriteImage(image, outputImageFileName)
+    #START_PROCEDURAL_IMAGE_READER_WRITER_EXAMPLE
+    image = sitk.ReadImage(inputImageFileName, imageIO="PNGImageIO")
+    sitk.WriteImage(image, outputImageFileName)
+    #END_PROCEDURAL_IMAGE_READER_WRITER_EXAMPLE
 
 
 # A simple transform input/output example
 #
 def example3():
+    """ A Simple Transform Input/Output Example """
 
-  import SimpleITK as sitk
+    import SimpleITK as sitk
 
-  basic_transform = sitk.Euler2DTransform()
-  basic_transform.SetTranslation((2,3))
+    #START_PROCEDURAL_TRANSFORM_READER_WRITER_EXAMPLE
+    basic_transform = sitk.Euler2DTransform()
+    basic_transform.SetTranslation((2, 3))
 
-  sitk.WriteTransform(basic_transform, 'euler2D.tfm')
-  read_result = sitk.ReadTransform('euler2D.tfm')
+    sitk.WriteTransform(basic_transform, "euler2D.tfm")
+    read_result = sitk.ReadTransform("euler2D.tfm")
 
-  assert(str(type(read_result) != type(basic_transform)))
+    assert isinstance(read_result, sitk.Euler2DTransform)
+    #END_PROCEDURAL_TRANSFORM_READER_WRITER_EXAMPLE
 
-
-import sys
 
 if __name__ == "__main__":
 

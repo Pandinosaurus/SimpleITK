@@ -1,0 +1,93 @@
+# .pre-commit-config.yaml
+# for details see https://pre-commit.com
+# for list of available hooks see https://pre-commit.com/hooks.html
+#
+# Preclude commits that do not conform to various criteria.
+#
+# If a pre-commit check must be skipped then use: `SKIP=check_id git commit` Where `check_id` is the id of the check to
+# be skipped such as `black`.
+
+fail_fast: true
+default_stages: [commit]
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+   - id: detect-private-key
+   - id: forbid-submodules
+   - id: check-case-conflict
+   - id: check-illegal-windows-names
+   - id: check-json
+   - id: check-yaml
+   - id: check-xml
+   - id: check-shebang-scripts-are-executable
+   - id: end-of-file-fixer
+     types: [text]
+   - id: trailing-whitespace
+     types: [text]
+   - id: pretty-format-json
+     args:
+       - "--autofix"
+       - "--no-ensure-ascii"
+       - "--indent=2"
+       - "--no-sort-keys"
+- repo: https://github.com/psf/black
+  rev: 24.2.0
+  hooks: # check conformance to black formatting
+   - id: black
+     args: ['--diff', '-v'] # if run without arguments, will fail and will format the files
+- repo: https://github.com/pre-commit/mirrors-clang-format
+  rev: v19.1.7
+  hooks:
+    - id: clang-format
+      args: ['--style=file']
+      files: '\.(c|cc|h|cxx|hxx)$'
+- repo: https://github.com/BlankSpruce/gersemi
+  rev: 0.19.3
+  hooks:
+  - id: gersemi
+    args: [ '--config', '.gersemi.config', '-i' ]
+    files: '.cmake$|CMakeLists.txt'
+- repo: https://github.com/python-jsonschema/check-jsonschema
+  rev: '78690b6ce14891a2ae695190a74e966217eec3c8' #'0.33.0'
+  hooks:
+    - id: check-jsonschema
+      name: Validate meta files
+      args: ["--schemafile", "ExpandTemplateGenerator/simpleitk_filter_description.schema.json"]
+      files: ^Code/BasicFilters/.*\.json$
+- repo: https://github.com/SimpleITK/CommentSpellCheck.git
+  rev: v0.4.2
+  hooks:
+    - id: comment-spell-check
+      args: ['--miss', '--dict','.github/workflows/additional_dictionary.txt']
+      exclude: Ancillary/
+- repo: local
+  hooks:
+    - id: local-prepare-commit-msg
+      name: 'local prepare-commit-msg'
+      entry: 'Utilities/Hooks/prepare-commit-msg'
+      language: system
+      stages: [prepare-commit-msg]
+    - id: check-setup-for-development
+      name: 'Check version of SetupForDevelopment'
+      entry: 'Utilities/Hooks/check-setup-for-development'
+      language: system
+      pass_filenames: false
+      stages: [pre-commit]
+    - id: kw-commit-msg
+      name: 'kw commit-msg'
+      entry: 'Utilities/Hooks/kw-commit-msg'
+      language: system
+      stages: [commit-msg]
+    - id: kw-pre-commit
+      name: 'kw-pre-commit'
+      entry: 'Utilities/Hooks/kw-pre-commit'
+      language: system
+      stages: [pre-commit]
+      pass_filenames: false
+    - id: forbid-txx
+      name: 'forbid txx extensions'
+      entry: Files with the .txx extension are deprecated -- please use .hxx instead
+      files: '\.txx$'
+      language: fail
+      stages: [pre-commit]

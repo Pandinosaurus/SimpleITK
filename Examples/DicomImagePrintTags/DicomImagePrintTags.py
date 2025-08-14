@@ -17,23 +17,31 @@
 #
 # =========================================================================
 
-import SimpleITK as sitk
+""" A SimpleITK example demonstrating how to print a DICOM image's tags. """
+
 import sys
+import SimpleITK as sitk
 
-if len(sys.argv) < 2:
-    print("Usage: DicomImagePrintTags <input_file>")
-    sys.exit(1)
+def main(args):
+    """ A SimpleITK script that prints a DICOM image's tags. """
+    if len(args) < 2:
+        print("Usage: DicomImagePrintTags <input_file>")
+        sys.exit(1)
 
-reader = sitk.ImageFileReader()
+    reader = sitk.ImageFileReader()
 
-reader.SetFileName(sys.argv[1])
-reader.LoadPrivateTagsOn()
+    reader.SetFileName(args[1])
+    reader.LoadPrivateTagsOn()
 
-reader.ReadImageInformation()
+    reader.ReadImageInformation()
 
-for k in reader.GetMetaDataKeys():
-    v = reader.GetMetaData(k)
-    print(f"({k}) = = \"{v}\"")
+    for k in reader.GetMetaDataKeys():
+        v = reader.GetMetaData(k)
+        print(f'({k}) = = "{v}"')
 
-print(f"Image Size: {reader.GetSize()}")
-print(f"Image PixelType: {sitk.GetPixelIDValueAsString(reader.GetPixelID())}")
+    print(f"Image Size: {reader.GetSize()}")
+    print(f"Image PixelType: {sitk.GetPixelIDValueAsString(reader.GetPixelID())}")
+
+
+if __name__ == "__main__":
+    main(sys.argv)

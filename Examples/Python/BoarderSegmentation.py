@@ -17,17 +17,16 @@
 #
 # =========================================================================
 
-from __future__ import print_function
+""" An example script demonstrating boarder segmentation in SimpleITK. """
 
 import sys
-import SimpleITK as sitk
 import os
+import SimpleITK as sitk
 
 # verify that we have the correct number of arguments
-if (len(sys.argv) != 5):
-    sys.stderr.write(
-        "Usage: prog inputFile outputFile replaceValue upperThreshold\n")
-    exit(1)
+if len(sys.argv) != 5:
+    sys.stderr.write("Usage: {sys.argv[0]} inputFile outputFile replaceValue upperThreshold\n")
+    sys.exit(1)
 
 # copy the arguments in to variables
 inputFileName = sys.argv[1]
@@ -41,8 +40,7 @@ image = sitk.ReadImage(inputFileName)
 # Threshold the value [0,2), results in values inside the range 1, 0 otherwise
 boundary = sitk.BinaryThreshold(image, 0, upperThreshold, 1, 0)
 
-boundary = sitk.BinaryMorphologicalClosing(boundary,
-                                           [1] * image.GetDimension())
+boundary = sitk.BinaryMorphologicalClosing(boundary, [1] * image.GetDimension())
 
 # Remove any label pixel not connected to the boarder
 boundary = sitk.BinaryGrindPeak(boundary)
@@ -57,5 +55,5 @@ image = image * ~boundary
 # add the replace value to the pixel on the board
 image = image + (boundary * replaceValue)
 
-if ("SITK_NOSHOW" not in os.environ):
+if "SITK_NOSHOW" not in os.environ:
     sitk.Show(image, "Boarder Segmentation")
